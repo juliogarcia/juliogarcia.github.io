@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<link rel="stylesheet" href="assets/css/reset.css">
+	<link rel="stylesheet" href="assets/css/style.css">
+	<script src="assets/scripts/thirdparty/jquery-2.1.4.min.js"></script>
+	<script src="assets/scripts/thirdparty/plotly-latest.min.js"></script>
+	<script src="assets/scripts/thirdparty/jquery.tablesorter.js"></script>
+</head>
+<body>
+
+	<div id="wrapper">
+			<div id="header">
+				<div id="player-select">
+					Select Player: 
+					<select name="" id="select-dropdown">
+						<option></option>
+					</select>
+				</div>
+				<div id="left-header">
+					<div id="player-info">
+						<h1></h1>
+						<h2></h2>
+						<h3></h3>
+					</div>
+					
+				</div>
+				<div id="right-header">
+					<table>
+						<tr class="stat-data">
+							<td class="td-stat" id="td-ba"></td>
+							<td class="td-stat" id="td-obp"></td>
+							<td class="td-stat" id="td-slg"></td>
+							<td class="td-stat" id="td-ops"></td>
+							<td class="td-stat" id="td-opsplus"></td>
+							<td class="td-stat" id="td-iso"></td>
+							<td class="td-stat" id="td-babip"></td>
+							<td class="td-stat" id="td-rc"></td>
+						</tr>
+						<tr class="stat-name">
+							<td>BA</td>
+							<td>OBP</td>
+							<td>SLG</td>
+							<td>OPS</td>
+							<td>OPS+</td>
+							<td>ISO</td>
+							<td>BABIP</td>
+							<td>RC</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+
+			<div id="myDiv"></div>
+
+			<div id="stat-links">
+			<br>
+				<ul>
+					<li><a class="add link-ba" href="#ba" data-clicked="0" data-trace="" data-cat="BA">BA</a></li>
+					<li><a class="add link-obp" href="#obp" data-clicked="0" data-trace="" data-cat="OBP">OBP</a></li>
+					<li><a class="add link-slg" href="#slg" data-clicked="0" data-trace="" data-cat="SLG">SLG</a></li>
+					<li><a class="add link-ops" href="#ops" data-clicked="0" data-trace="" data-cat="OPS">OPS</a></li>
+					<li><a class="add link-kpercent" href="#kRate" data-clicked="0" data-trace="" data-cat="K%">K %</a></li>
+					<li><a class="add link-bbpercent" href="#bbRate" data-clicked="0" data-trace="" data-cat="BB%">BB %</a></li>
+					<li><a class="add link-opsplus" href="#OPSPLUS" data-clicked="0" data-trace="" data-cat="OPSPLUS">OPS+</a></li>
+					<li><a class="add link-iso" href="#baiso" data-clicked="0" data-trace="" data-cat="ISO">ISO</a></li>
+					<li><a class="add link-babip" href="#babip" data-clicked="0" data-trace="" data-cat="BABIP">BABIP</a></li>
+					<li><a class="add link-rc" href="#rc" data-clicked="0" data-trace="" data-cat="RC">RC</a></li>
+					<li>|</li>
+					<li><a class="add link-h" href="#h" data-clicked="0" data-trace="" data-cat="H">H</a></li>
+					<li><a class="add link-hr" href="#hr" data-clicked="0" data-trace="" data-cat="HR">HR</a></li>
+					<li><a class="add link-bb" href="#bb" data-clicked="0" data-trace="" data-cat="BB">BB</a></li>
+					<li><a class="add link-k" href="#k" data-clicked="0" data-trace="" data-cat="K">K</a></li>
+					<li><a class="add link-hbp" href="#hbp" data-clicked="0" data-trace="" data-cat="HBP">HBP</a></li>
+					<li><a class="add link-sf" href="#sf" data-clicked="0" data-trace="" data-cat="SF">SF</a></li>
+					<li><a class="add link-tb" href="#tb" data-clicked="0" data-trace="" data-cat="TB">TB</a></li>
+					<li><a class="add link-rbi" href="#rbi" data-clicked="0" data-trace="" data-cat="RBI">RBI</a></li>
+				</ul>
+			</div>
+
+			<table id="tabular">
+				<thead>
+					<tr>
+						<th class="left-align">Date</th>
+						<th class="left-align">Opponent</th>
+						<th>PA</th>
+						<th>AB</th>
+						<th>H</th>
+						<th>HR</th>
+						<th>BB</th>
+						<th>K</th>
+						<th>HBP</th>
+						<th>SF</th>
+						<th>TB</th>
+						<th>RBI</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+				<tfoot>
+					<tr>
+						<td colspan="2" class="span2">2015 Season Total</td>
+						<td id="total-PA"></td>
+						<td id="total-AB"></td>
+						<td id="total-H"></td>
+						<td id="total-HR"></td>
+						<td id="total-BB"></td>
+						<td id="total-K"></td>
+						<td id="total-HBP"></td>
+						<td id="total-SF"></td>
+						<td id="total-TB"></td>
+						<td id="total-RBI"></td>
+					</tr>
+				</tfoot>
+			</table>
+	</div>
+
+	<script>
+
+		var App = {};
+		App.player = {};
+		App.player.trace = {};
+		App.player.trace.traceTrack = {};
+		App.player.trace.allTraces = [];
+		App.player.trace.allTraces[0] = [];
+		App.defaultData = [
+			{name: 'default', x: App.dates, y: [0, 1], line: {color:'transparent', width: 0}}
+		]
+
+		App.player.trace.allTraces[0][0] = App.defaultData;
+
+		App.json = function(playerFile){
+		// grab the json data this way so we can store in var and access later
+			var json = (function () {
+				var json = null;
+				$.ajax({
+					'async': false,
+					'global': false,
+					'url': playerFile,
+					'dataType': "json",
+					'success': function (data) {
+						json = data;
+					}
+				}).error(function(){
+					json = {};
+				});
+				return json;
+				})();
+			return json;
+		}
+
+			App.dates = [];
+			App.pa = 0;
+			App.ab = 0;
+			App.h = 0;
+			App.hr = 0;
+			App.bb = 0;
+			App.k = 0;
+			App.hbp = 0;
+			App.sf = 0;
+			App.tb = 0;
+			App.rbi = 0;
+			App.ba = [];
+			App.obp = [];
+			App.slg = [];
+			App.ops = [];
+			App.paTotal = [];
+			App.abTotal = [];
+			App.hTotal = [];
+			App.hrTotal = [];
+			App.bbTotal = [];
+			App.kTotal = [];
+			App.hbpTotal = [];
+			App.sfTotal = [];
+			App.tbTotal = [];
+			App.rbiTotal = [];
+			App.kRate = [];
+			App.iso = [];
+			App.bbRate = [];
+			App.lgAvg = [];
+			App.babip = [];
+			App.rc = [];
+			App.opsplus = [];
+			App.dateRange = [];
+
+		function handleRows(json)
+		{
+			App.dates = [];
+			App.pa = 0;
+			App.ab = 0;
+			App.h = 0;
+			App.hr = 0;
+			App.bb = 0;
+			App.k = 0;
+			App.hbp = 0;
+			App.sf = 0;
+			App.tb = 0;
+			App.rbi = 0;
+			App.ba = [];
+			App.obp = [];
+			App.slg = [];
+			App.ops = [];
+			App.paTotal = [];
+			App.abTotal = [];
+			App.hTotal = [];
+			App.hrTotal = [];
+			App.bbTotal = [];
+			App.kTotal = [];
+			App.hbpTotal = [];
+			App.sfTotal = [];
+			App.tbTotal = [];
+			App.rbiTotal = [];
+			App.kRate = [];
+			App.bbRate = [];
+			App.lgAvg = [];
+			App.babip = [];
+			App.rc = [];
+			App.iso = [];
+			App.opsplus = [];
+			App.dateRange = [];
+
+			// iterate over the json data
+		if(typeof json.rows != null) {
+			$.each(json.rows, function(i,k){
+				/*
+					0 - playerId
+					1 - Player full name
+					2 - Player img
+					3 - game date
+					4 - team, abbreviated
+					5 - logo img
+					6 - opponent, abbreviated
+					7 - opponent logo img
+					8 - PA
+					9 - AB
+				   10 - H
+				   11 - HR
+				   12 - BB
+				   13 - K
+				   14 - HBP
+				   15 - SF
+				   16 - TB
+				   17 - RBI
+				*/
+
+				// get the game dates converted for display in chart
+				var timeStamp = k[3].split(" "); 
+				var gameDates = new Date(timeStamp[0]); // just get date, which is in YYY-MM-DD format, first element in array thanks to split on prev 	line
+				var gameDay = gameDates.getTime();
+				App.dates.push(gameDay);
+
+				// counting stats for each game, divide by 10 to keep bar and line charts together
+				App.paTotal.push(k[8] / 10);
+				App.abTotal.push(k[9] / 10);
+				App.hTotal.push(k[10] / 10);
+				App.hrTotal.push(k[11] / 10);
+				App.bbTotal.push(k[12] / 10);
+				App.kTotal.push(k[13] / 10);
+				App.hbpTotal.push(k[14] / 10);
+				App.sfTotal.push(k[15] / 10);
+				App.tbTotal.push(k[16] / 10);
+				App.rbiTotal.push(k[17] / 10);
+
+				// get season values, not for each game ;-,
+				App.pa = parseInt(k[8]) + parseInt(App.pa);
+				App.ab = parseInt(k[9]) + parseInt(App.ab);
+				App.h = parseInt(k[10]) + parseInt(App.h);
+				App.hr = parseInt(k[11]) + parseInt(App.hr);
+				App.bb = parseInt(k[12]) + parseInt(App.bb);
+				App.k = parseInt(k[13]) + parseInt(App.k);
+				App.hbp = parseInt(k[14]) + parseInt(App.hbp);
+				App.sf = parseInt(k[15]) + parseInt(App.sf);
+				App.tb = parseInt(k[16]) + parseInt(App.tb);
+				App.rbi = parseInt(k[17]) + parseInt(App.rbi);
+
+				// get batting average
+				var battingAvg = App.h / App.ab;
+				App.ba.push(battingAvg.toFixed(4));
+
+				// get obp
+				App.obp.push(((App.h + App.bb + App.hbp) / (App.ab + App.bb + App.hbp + App.sf)).toFixed(4));
+
+				// get slg
+				App.slg.push((App.tb / App.ab).toFixed(4));
+
+				// calculate everything for ops instead of dealing with converting and adding floats of obp & slg
+				App.ops.push(((App.ab * (App.h + App.bb + App.hbp) + App.tb * (App.ab + App.bb + App.sf + App.hbp)) / (App.ab * (App.ab + App.bb + App.	sf + App.hbp))).toFixed(4));
+
+				// K % & BB %
+				App.kRate.push((App.k / App.pa).toFixed(4));
+				App.bbRate.push((App.bb / App.pa).toFixed(4));
+
+				// Basic Runs Created
+				App.rc.push( ( (App.h + App.bb) * App.tb) / (App.ab + App.bb));
+
+				// BAbip
+				App.babip.push((App.h - App.hr) / (App.ab - App.k + App.sf));
+
+				// OPS+
+				App.opsplus.push( ( ( ( (App.h + App.bb + App.hbp) / (App.ab + App.bb + App.hbp + App.sf) ) / .316) + ( ( (App.tb / App.ab) / .410) - 1) ) * 100 );
+
+				// ISO
+				App.iso.push( (App.tb / App.ab) - (App.h / App.ab) );
+
+				// build a table for data reference
+				$('#tabular tbody').append('<tr class="statRow" id="gameDate-' + gameDates.getFullYear() + '-' + (gameDates.getMonth() + 1)+'-'+gameDates.getDate()+'"><td class="left-align">'+(gameDates.getMonth() + 1)+'/'+gameDates.getDate()+'/'+gameDates.getFullYear()+'</td><td class="left-align">'+k[6]+'</td><td>'+k[8]+'</td><td>'+k[9]+'</td><td>'+k[10]+'</td><td>'+k[11]+'</td><td>'+k[12]+'</td><td>'+k[13]+'</td><td>'+k[14]+'</td><td>'+k[15]+'</td><td>'+k[16]+'</td><td>'+k[17]+'</td></tr>');
+
+				$("table").trigger("update");
+			});
+
+			$('#td-ba').html('' + (App.h / App.ab).toFixed(4).replace(/^0+/, ''));
+			$('#td-obp').html(((App.h + App.bb + App.hbp) / (App.ab + App.bb + App.hbp + App.sf)).toFixed(4).replace(/^0+/, ''));
+			$('#td-slg').html((App.tb / App.ab).toFixed(4).replace(/^0+/, ''));
+			$('#td-ops').html(((App.ab * (App.h + App.bb + App.hbp) + App.tb * (App.ab + App.bb + App.sf + App.hbp)) / (App.ab * (App.ab + App.bb + App.	sf + App.hbp))).toFixed(4).replace(/^0+/, ''));
+			$('#td-opsplus').html(( ( ( ( (App.h + App.bb + App.hbp) / (App.ab + App.bb + App.hbp + App.sf) ) / .316) + ( ( (App.tb / App.ab) / .410) - 1) ) * 100 ).toFixed(0));
+			$('#td-babip').html( ( (App.h - App.hr) / (App.ab - App.k + App.sf) ).toFixed(4).replace(/^0+/, '') );
+			$('#td-rc').html( (( (App.h + App.bb ) * App.tb) / (App.ab + App.bb) ).toFixed(0));
+			$('#td-iso').html( ((App.tb / App.ab) - (App.h / App.ab)).toFixed(4).replace(/^0+/, ''));
+			// now that we are out of the $.each and since we have game dates, set start and end dates for chart
+			App.startDate = App.dates[0];
+			App.endDate = App.dates[App.dates.length - 1];
+
+			// but pad the chart by +/- a couple days so lines fit nicely - would refactor this for non-prototype effort
+			var paddedStartDate = new Date(App.startDate);
+			var paddedEndDate = new Date(App.endDate);
+
+			paddedStartDate = new Date(paddedStartDate.getFullYear(), paddedStartDate.getMonth(), paddedStartDate.getDate() - 2);
+			paddedEndDate = new Date(paddedEndDate.getFullYear(), paddedEndDate.getMonth(), paddedEndDate.getDate() + 2);
+
+			App.dateRange.push(paddedStartDate.getTime());
+			App.dateRange.push(paddedEndDate.getTime());
+
+			$("#total-PA").html(App.pa);
+			$("#total-AB").html(App.ab);
+			$("#total-H").html(App.h);
+			$("#total-HR").html(App.hr);
+			$("#total-BB").html(App.bb);
+			$("#total-K").html(App.k);
+			$("#total-HBP").html(App.hbp);
+			$("#total-SF").html(App.sf);
+			$("#total-TB").html(App.tb);
+			$("#total-RBI").html(App.rbi);
+		}
+	}
+	$(function(){
+
+		$('table').hide();
+		$('#stat-links').hide();
+		$("table").tablesorter(); 
+
+		var players = {}
+
+		players.info = [{
+			"firstName": "Brett",
+			"lastName": "Gardner",
+			"id": 458731,
+			"teamCity": "New&nbsp;York",
+			"teamName": "Yankees",
+			"position": "LF",
+			"jerseyNumber": "11",
+		},
+		{
+			"firstName": "Shin-Soo",
+			"lastName": "Choo",
+			"id": 425783,
+			"teamCity": "Texas",
+			"teamName": "Rangers",
+			"position": "RF",
+			"jerseyNumber": "17",
+		},
+		{
+			"firstName": "Kris",
+			"lastName": "Bryant",
+			"id": 592178,
+			"teamCity": "Chicago",
+			"teamName": "Cubs",
+			"position": "3B",
+			"jerseyNumber": "17"
+		}
+		];
+
+		// var defaultPlayer = players.info[0].id
+
+		// var playerFile = 'data/mlb-' + defaultPlayer + '.json';
+		// var playerId = defaultPlayer;
+
+		$.each(players.info, function(i,v){
+			var selected = '';
+			// if(playerId == v.id) {
+				// selected = 'selected';
+			// }
+			$('#player-select select').append("<option "+selected+" value="+v.id+" data-firstName="+ v.firstName+" data-lastName="+ v.lastName+" data-city="+v.teamCity+" data-team="+v.teamName+" data-position="+v.position+" data-jerseyNumber="+v.jerseyNumber+">" + v.firstName + " " + v.lastName +  "</option>");
+		});
+
+		// json = App.json(playerFile)
+
+
+		$(document).on('change', '#player-select select', function(){
+
+			if($('#player-select option:selected').val() == '')
+			{
+				return;
+			}
+
+			App.player = {};
+			App.player.id = $('#player-select option:selected').val();
+			App.player.trace = {};
+			App.player.trace.traceTrack = {};
+			App.player.trace.allTraces = [];
+			App.player.trace.allTraces[0] = [];
+			App.player.trace.allTraces[0][0] = App.defaultData;
+
+			playerFile = 'data/mlb-' + App.player.id + '.json';
+
+			json = App.json(playerFile)
+
+		if(typeof json.rows === 'undefined') {
+			$('#myDiv').html('<h4>Error loading json data. Ensure data directory contains json files or try placing files on a web server to allow XHR access.</h4>');
+		} else {
+
+			$('a[data-trace]').each(function(){
+				$(this).removeClass('.highlight');
+				$(this).removeClass('remove');
+				$(this).addClass('add');
+				$(this).data('clicked', '0');
+			});
+
+			$('table').show();
+			$('#stat-links').show();
+			var firstName = $("#player-select option:selected").attr("data-firstName");
+			var lastName = $("#player-select option:selected").attr("data-lastName");
+			var jerseyNumber = $("#player-select option:selected").attr("data-jerseyNumber");
+			var position = $("#player-select option:selected").attr("data-position");
+			var team = $("#player-select option:selected").attr("data-team");
+			var city = $("#player-select option:selected").attr("data-city");
+			$('#player-info h1').html(firstName + ' ' + lastName);
+			$('#player-info h2').html('#' + jerseyNumber + ' | ' + position);
+			$('#player-info h3').html(city + ' ' + team);
+
+
+
+			var playerImg = json.rows[0][2];
+			$('#player-info').css('background', 'url('+playerImg+') no-repeat');
+
+
+			$("#tabular tbody").empty();
+			handleRows(json);
+
+			$('.add').removeClass('highlight');
+
+			// make sure the same trace only appears once, not multiple times
+			var plotDiv = document.getElementById('myDiv');
+
+			// get the plot data
+			var plotData = plotDiv.data;
+			var exists = [];
+
+			if(typeof plotData != 'undefined') {
+				for(var i = 1; i <= plotData.length; i++){
+					exists.push(i)
+					if(typeof(plotData[i]) != 'undefined') {
+						Plotly.deleteTraces('myDiv', exists);
+					}
+				};
+
+				App.ba_trace.length = 0;
+				// App.defaultData.length = 0;
+				App.ba_trace.length = 0;
+				App.obp_trace.length = 0;
+				App.slg_trace.length = 0;
+				App.ops_trace.length = 0;
+				App.ops_trace.length = 0;
+				App.bbRate_trace.length = 0;
+				App.kRate_trace.length = 0;
+				App.opsplus_trace.length = 0;
+				App.babip_trace.length = 0;
+				App.h_trace.length = 0;
+				App.hr_trace.length = 0;
+				App.bb_trace.length = 0;
+				App.rbi_trace.length = 0;
+				App.tb_trace.length = 0;
+				App.k_trace.length = 0;
+
+				// App.player.trace.allTraces = [];
+				Plotly.newPlot('myDiv', App.player.trace.allTraces[0], layout, {displayModeBar: false});
+			} else {
+				Plotly.newPlot('myDiv', App.defaultData, layout, {displayModeBar: false});
+			}
+
+			var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+			var dateFormat = App.dates.map(function(arr){
+				var game = new Date(arr)
+				return monthNames[(game.getMonth())] + '-' + game.getDate()
+			})
+
+		App.ba_trace = [
+			{
+				name: 'BA',
+				x: App.dates,
+				y: App.ba,
+				text: dateFormat, 
+				showlegend: false,
+				line: {
+					color: '#4D4D4D',
+					width: 1,
+					shape: "spline",
+					smoothing: .5,
+				},
+				marker: {
+					size:1
+				}
+			}
+		];
+
+		App.obp_trace = [
+			{name: 'OBP', 
+			x: App.dates, 
+			y: App.obp, 
+			text: dateFormat, 
+			line: {color:'#5DA5DA', width: 1, shape: "spline", smoothing: .5}}
+		]
+
+		App.slg_trace = [
+			{name: 'SLG', x: App.dates, y: App.slg, text: dateFormat, line: {color:'#FAA43A', width: 1, shape: "spline", smoothing: .5}}
+		]
+
+		App.ops_trace = [
+			{name: 'OPS', x: App.dates, y: App.ops, text: dateFormat, line: {color:'#60BD68', width: 1, shape: "spline", smoothing: .5}}
+		]
+
+		App.kRate_trace = [
+			{name: 'K%', x: App.dates, y: App.kRate, text: dateFormat, line: {color:'#F17CB0', width: 1, shape: "spline", smoothing: .5}}
+		]
+
+		App.bbRate_trace = [
+			{name: 'BB%', x: App.dates, y: App.bbRate, text: dateFormat, line: {color:'#F15854', width: 1, shape: "spline", smoothing: .5}}
+		]
+
+		App.opsplus_trace = [
+			{name: 'OPS+', x: App.dates, y: App.opsplus.map(function(arr){return arr.toFixed(0)}), text: dateFormat, line: {color:'#B276B2', width: 1, shape: "spline", smoothing: .5}}
+		]
+
+		App.babip_trace = [
+			{name: 'babip', x: App.dates, y: App.babip.map(function(arr){return arr.toFixed(4)}), text: dateFormat, line: {color:'#DECF3F', width: 1, shape: "spline", smoothing: .5}}
+		]
+
+		App.iso_trace = [
+			{name: 'ISO', x: App.dates, y: App.iso.map(function(arr){return arr.toFixed(4)}), text: dateFormat, line: {color:'#B2912F', width: 1, shape: "spline", smoothing: .5}}
+		]
+
+		App.rc_trace = [
+			{name: 'RC', x: App.dates, y: App.rc.map(function(arr){return arr.toFixed(0)}), text: dateFormat, line: {color:'#F15854', width: 1, shape: "spline", smoothing: .5}}
+		]
+
+
+
+
+		App.h_trace = [
+			{name: 'H', x: App.dates, y:App.hTotal, text:App.hTotal.map(function(arr){
+				return arr * 10 + ' Hit(s)';
+			}),type: 'bar', marker: {color:'#4D4D4D',line: {color:'#4D4D4D', width: 0}}}
+		]
+
+		App.hr_trace = [
+			{name: 'HR', x: App.dates, y:App.hrTotal, text:App.hrTotal.map(function(arr){
+				return arr * 10 + ' HR(s)';
+			}),type: 'bar', marker: {color:'#5DA5DA',line: {color:'#5DA5DA', width: 0}}}
+		]
+
+		App.bb_trace = [
+			{name: 'BB', x: App.dates, y:App.bbTotal, text:App.bbTotal.map(function(arr){
+				return arr * 10 + ' Total Walks';
+			}),type: 'bar', marker: {color:'#FAA43A',line: {color:'#FAA43A', width: 0}}}
+		]
+
+		App.hbp_trace = [
+			{name: 'HBP', x: App.dates, y:App.hbpTotal, text:App.hbpTotal.map(function(arr){
+				return arr * 10 + ' Total HBP';
+			}),type: 'bar', marker: {color:'#60BD68',line: {color:'#60BD68', width: 0}}}
+		]
+
+		App.sf_trace = [
+			{name: 'SF', x: App.dates, y:App.sfTotal, text:App.sfTotal.map(function(arr){
+				return arr * 10 + ' Total Sacrifices';
+			}),type: 'bar', marker: {color:'#F17CB0',line: {color:'#F17CB0', width: 0}}}
+		]
+
+		App.tb_trace = [
+			{name: 'TB', x: App.dates, y:App.tbTotal, text:App.tbTotal.map(function(arr){
+				return arr * 10 + ' Total Bases';
+			}),type: 'bar', marker: {color:'#B2912F',line: {color:'#B2912F', width: 0}}}
+		]
+
+		App.rbi_trace = [
+			{name: 'RBI', x: App.dates, y:App.rbiTotal, text:App.rbiTotal.map(function(arr){
+				return arr * 10 + ' RBI';
+			}), type: 'bar', marker: {color:'#DECF3F', line: {color:'#DECF3F', width: 0}}}
+		]
+
+		var layout = {
+			type: 'scatter',
+			showlegend:false,
+			title: '2015 Regular Season',
+			autosize: false,
+			width:1000,
+			height: 600,
+			// hovermode:"closest",
+			textposition: 'top',
+			paper_bgcolor: '#f3f3f3',
+			plot_bgcolor: '#f3f3f3',
+			margin: {
+				l: 60,
+				r: 25,
+				b: 30,
+				t: 50
+			},
+			yaxis: {
+				type:"linear",
+				fixedrange: true,
+				hoverformat: '{.2f}',
+				tickformat: '.3f',
+			},
+			xaxis: {
+				titlefont: {
+					size: 16,
+					family: 'helvetica'
+				},
+				gridcolor: '#dedede',
+				fixedrange: true,
+				showline: true,
+				linecolor: '#f3f3f3',
+				type: 'date',
+				tickmode: 'auto',
+				nticks: 4,
+				ticks: 'inside',
+				tickformat: '%B',
+				tickcolor:'#dedede',
+				range: App.dateRange,
+
+			},
+		}
+
+		Plotly.newPlot('myDiv', App.defaultData, layout, {displayModeBar: false});
+		myDiv.on('plotly_click', function(data){
+			var gameDate = data.points[0].x;
+
+			gameDate = gameDate.split(" ");
+			gameDate = new Date(gameDate[0]);
+
+			gameDate = gameDate.getUTCFullYear() + '-' + (gameDate.getUTCMonth() + 1) + '-' + gameDate.getUTCDate();
+
+			$('#gameDate-' + gameDate + ' td').css({'background-color':'#c0d2e2', "color": "#000"});
+
+			// found this code after google search
+			$('#tabular tbody').animate({
+				scrollTop: $('#gameDate-' + gameDate).parent().scrollTop() + $('#gameDate-' + gameDate).offset().top - $('#gameDate-' + gameDate).parent().offset().top
+			}, {
+				duration: 1000,
+				specialEasing: {
+				width: 'linear',
+				height: 'easeOutBounce'
+			}
+			});
+		});
+
+		$(document).on('click', '.remove', function(e){
+
+			var plotDiv = document.getElementById('myDiv');
+			App.plotData = plotDiv.data;
+			e.preventDefault();
+
+			var cat = $(this).attr('data-cat');
+			App.player.trace.deleteTrace = 1;
+
+			$.each(App.player.trace.allTraces[0][0], function(k,v)
+			{
+				if(typeof v == 'object') {
+					if(v['name'] == cat) {
+						$(this).attr("data-clicked", '0');
+						$(this).removeClass('remove');
+						$(this).addClass('add');
+						delete k;
+						App.player.trace.deleteTrace = k;
+					}
+				}
+			});
+
+			if(typeof App.player.trace.deleteTrace != 'undefined'){
+				Plotly.deleteTraces('myDiv', App.player.trace.deleteTrace);
+				$(this).removeClass('highlight');
+			}
+		});
+
+		$(document).on('click', '.add', function(e)
+		{
+
+			var plotDiv = document.getElementById('myDiv');
+			App.plotData = plotDiv.data;
+			e.preventDefault();
+			var cat = $(this).attr('data-cat');
+
+			// Need to toggle links and traces
+			// if trace is present on chart, remove
+			// if not, add trace 
+
+			// need to track each add click, since each add click creates a trace and such creates an index value we need for delete... or something
+
+			var category = function() {
+				var catVal = '';
+				switch(cat) {
+					case 'BA':
+						catVal = App.ba_trace;
+						break;
+					case 'OBP':
+						catVal = App.obp_trace;
+						break;
+					case 'SLG':
+						catVal = App.slg_trace;
+						break;
+					case 'OPS':
+						catVal = App.ops_trace;
+						break;
+					case 'OPS':
+						catVal = App.ops_trace;
+						break;
+					case 'BB%':
+						catVal = App.bbRate_trace;
+						break;
+					case 'K%':
+						catVal = App.kRate_trace;
+						break;
+					case 'OPSPLUS':
+						catVal = App.opsplus_trace;
+						break;
+					case 'BABIP':
+						catVal = App.babip_trace;
+						break;
+					case 'RC':
+						catVal = App.rc_trace;
+						break;
+					case 'ISO':
+						catVal = App.iso_trace;
+						break;
+					case 'H':
+						catVal = App.h_trace;
+						break;
+					case 'HR':
+						catVal = App.hr_trace;
+						break;
+					case 'BB':
+						catVal = App.bb_trace;
+						break;
+					case 'RBI':
+						catVal = App.rbi_trace;
+						break;
+					case 'TB':
+						catVal = App.tb_trace;
+						break;
+					case 'K':
+						catVal = App.k_trace;
+						break;
+					case 'SF':
+						catVal = App.sf_trace;
+						break;
+					case 'HBP':
+						catVal = App.hbp_trace;
+						break;
+				}
+				return catVal;
+			}
+
+			for(var i = 0; i < App.player.trace.allTraces.length; i++)
+			{
+				if(App.plotData[i].length != 'undefined') {
+					for(var x = 0; x < App.player.trace.allTraces[i].length; x++){
+						var z = 0;
+						if(App.player.trace.allTraces[i][x][z]['name'] != 'default')
+						{
+							if(App.player.trace.allTraces[i][x]['name'] != App.plotData[i]['name']){
+								App.player.trace.allTraces[i][x] = [];
+								App.player.trace.allTraces[i][x].push(category());
+							}
+							z++;
+						}
+					}
+				}
+			}
+				$(this).attr("data-clicked", '1');
+				$(this).addClass('remove');
+				$(this).addClass('highlight');
+				$(this).removeClass('add');
+				Plotly.addTraces('myDiv', category());
+		});
+		}
+	});
+});
+	</script>
+</body>
+</html>

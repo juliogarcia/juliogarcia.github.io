@@ -1,0 +1,231 @@
+body {
+	background: #f3f3f3;
+	font-family: 'Helvetica Neue', Helvetica;
+	color: #4d4d4d;
+}
+
+#wrapper {
+	width: 1000px;
+	margin: 10px auto;
+	padding: 20px 0;
+}
+
+#wrapper #header {
+	/*display: inline-block;*/
+	height: 150px;
+}
+
+#wrapper #left-header {
+	width: 38%;
+	float:left;
+}
+
+#wrapper #right-header {
+	float:right;
+	width:60%;
+	padding: 5px;
+}
+
+#wrapper #right-header table {
+	width: 100%;
+}
+
+#wrapper #right-header table tr.stat-data td {
+	font-weight: bold;
+	font-size:18pt;
+}
+
+#wrapper #right-header table tr.stat-name td {
+	font-size: 7pt;
+}
+
+#wrapper #player-info {
+	min-height: 100px;
+	padding-left: 100px;
+}
+
+#wrapper h1 {
+	font-size: 24pt;
+	font-weight: bold;
+}
+
+#wrapper h2 {
+	font-size: 14pt;
+}
+
+#wrapper h3 {
+	font-size: 14pt;
+}
+
+#wrapper select {
+	margin:0 0 20px 0;
+	border: 1px solid #111;
+	background: #eee;
+	width: 150px;
+	padding: 5px 35px 5px 5px;
+	font-size: 14px;
+	border: 1px solid #ccc;
+	height: 30px;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	outline:none;
+	background: url(../img/triangle.png) 92% / 12% no-repeat #eee;
+}
+
+#wrapper select:hover {
+	cursor: pointer;
+	box-shadow: 1px 1px 4px 2px rgba(200,200,200, .8);
+}
+
+#wrapper a {
+	font-size: 10pt;
+	text-decoration: none;
+	padding-left: 10px;
+	padding-bottom: 4px;
+	border-bottom: 1px dashed #4d4d4d;
+}
+
+#wrapper a.highlight.link-ba {
+	border-bottom: 4px solid #4D4D4D;
+}
+
+#wrapper a.highlight.link-obp {
+	border-bottom: 4px solid #5DA5DA;
+}
+
+#wrapper a.highlight.link-slg {
+	border-bottom: 4px solid #FAA43A;
+}
+
+#wrapper a.highlight.link-ops {
+	border-bottom: 4px solid #60BD68;
+}
+
+#wrapper a.highlight.link-bbpercent {
+	border-bottom: 4px solid #F15854;
+}
+
+#wrapper a.highlight.link-kpercent {
+	border-bottom: 4px solid #F17CB0;
+}
+
+#wrapper a.highlight.link-opsplus {
+	border-bottom: 4px solid #B276B2;
+}
+
+#wrapper a.highlight.link-babip {
+	border-bottom: 4px solid #DECF3F;
+}
+
+#wrapper a.highlight.link-iso {
+	border-bottom: 4px solid #B2912F;
+}
+
+#wrapper a.highlight.link-rc {
+	border-bottom: 4px solid #F15854;
+}
+
+#wrapper a.highlight.link-h {
+	border-bottom: 4px solid #4D4D4D;
+}
+
+#wrapper a.highlight.link-hr {
+	border-bottom: 4px solid #5DA5DA;
+}
+
+#wrapper a.highlight.link-bb {
+	border-bottom: 4px solid #FAA43A;
+}
+
+#wrapper a.highlight.link-rbi {
+	border-bottom: 4px solid #DECF3F;
+}
+
+#wrapper a.highlight.link-tb {
+	border-bottom: 4px solid #B2912F;
+}
+
+#wrapper a.highlight.link-k {
+	border-bottom: 4px solid #F17CB0;
+}
+
+#wrapper a.highlight.link-sf {
+	border-bottom: 4px solid #F17CB0;
+}
+
+#wrapper a.highlight.link-hbp {
+	border-bottom: 4px solid #60BD68;
+}
+
+#stat-links {
+	text-align: center;
+}
+
+#wrapper ul li {
+	display: inline;
+	margin-right: 15px;
+}
+
+#wrapper #tabular {
+	margin:100px 0 0 0;
+	width: 1000px;
+}
+
+#wrapper #tabular thead tr .headerSortUp {
+	background: url('../img/asc.gif') right center no-repeat;
+}
+#wrapper #tabular thead tr .headerSortDown {
+	background: url('../img/desc.gif') right center no-repeat;
+}
+
+#wrapper #tabular thead tr th {
+	font-weight: bold;
+	border-bottom:2px solid #4f4f4f;
+	width: 85px;
+}
+
+#wrapper #tabular thead tr th:hover {
+	cursor:pointer;
+}
+
+#wrapper #tabular thead tr th.left-align,
+#wrapper #tabular tbody tr td.left-align {
+	text-align: left
+}
+
+#wrapper #tabular thead,
+#wrapper #tabular tbody,
+#wrapper #tabular tfoot {
+	display: block;
+}
+
+#wrapper #tabular tfoot td {
+	width: 84px;
+	text-align: center;
+	padding: 5px 0px;
+	border-top:2px solid #4f4f4f;
+}
+
+#wrapper #tabular tfoot td.span2 {
+	width: 175px;
+	text-align: left;
+	white-space: nowrap;
+}
+
+#wrapper #tabular tbody {
+	height: 300px;
+	overflow: scroll;
+}
+
+#wrapper #tabular tbody tr td {
+	padding: 5px;
+	border-bottom: 1px solid #ccc;
+	text-align: center;
+	width: 75px;
+	font-size: 10pt;
+}
+
+#wrapper #tabular tbody tr:nth-child(odd) td {
+	background-color:#eee;
+}
